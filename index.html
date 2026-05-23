@@ -10,7 +10,8 @@
 :root{
   --ink:#0a0a0a;--ink2:#3a3532;--ink3:#7a746e;--paper:#f8f4ef;
   --paper2:#f0ebe3;--paper3:#e8e0d4;--accent:#c8390a;--accent2:#1a4a7a;
-  --gold:#b8860b;--green:#1a6b3a;--serif:'Playfair Display',Georgia,serif;
+  --gold:#b8860b;--green:#1a6b3a;
+  --serif:'Playfair Display',Georgia,serif;
   --body:'Source Serif 4',Georgia,serif;--mono:'JetBrains Mono',monospace;
 }
 body{background:var(--paper);color:var(--ink);font-family:var(--body);min-height:100vh}
@@ -77,7 +78,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);min-height
 .retry{margin-top:10px;padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:4px;cursor:pointer;font-family:var(--mono);font-size:11px}
 .sw{margin-bottom:28px}
 .sw-title{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--ink3);font-weight:600;padding-bottom:8px;border-bottom:1px solid var(--paper3);margin-bottom:12px}
-.wi{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--paper2);cursor:pointer;transition:background .1s}
+.wi{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--paper2);cursor:pointer}
 .wi:hover{background:var(--paper2)}
 .wsym{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent2)}
 .wname{font-size:10px;color:var(--ink3)}
@@ -97,6 +98,12 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);min-height
 .mbtns{display:flex;gap:8px;justify-content:flex-end}
 .bc{padding:7px 14px;border:1px solid var(--paper3);border-radius:4px;background:#fff;cursor:pointer;font-size:13px}
 .bok{padding:7px 16px;border:none;border-radius:4px;background:var(--accent2);color:#fff;cursor:pointer;font-size:13px}
+/* 新聞卡片 a 標籤樣式 */
+a.news-link{display:block;text-decoration:none;color:inherit}
+a.news-link:hover .hero-main{background:var(--paper2)}
+a.news-link:hover .mini{background:var(--paper2);border-left-color:var(--accent2)}
+a.news-link:hover .card{background:var(--paper2)}
+a.news-link:hover .list-row{background:var(--paper2)}
 @media(max-width:768px){
   .layout{grid-template-columns:1fr}.side-col{display:none}
   .hero-grid{grid-template-columns:1fr}.hero-stack{display:none}
@@ -123,7 +130,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);min-height
 
 <div class="subbar">
   <div style="display:flex;gap:8px">
-    <input class="si" id="q" type="text" placeholder="搜尋股票或關鍵字，如 NVDA、Fed…"/>
+    <input class="si" id="q" type="text" placeholder="搜尋股票或關鍵字，如 NVDA、聯準會…"/>
     <button class="sb" onclick="doSearch()">搜尋</button>
   </div>
   <span class="wl-label">追蹤：</span>
@@ -188,26 +195,37 @@ function renderWL(){
 
 function getTagKey(t){
   const s=t.toLowerCase();
-  if(/fed|rate|inflation|cpi|fomc|powell|warsh|monetary|yield|treasury/.test(s))return'fed';
-  if(/earnings?|profit|revenue|eps|guidance|q[1-4]|fiscal/.test(s))return'earnings';
-  if(/bitcoin|crypto|btc|eth/.test(s))return'crypto';
-  if(/china|trade|tariff|export/.test(s))return'trade';
-  if(/oil|energy|crude|wti|brent|opec/.test(s))return'energy';
-  if(/gdp|unemployment|jobs|recession/.test(s))return'macro';
+  if(/聯準會|升息|降息|通膨|fed|fomc|powell|warsh|利率|殖利率|treasury/.test(s))return'fed';
+  if(/財報|獲利|營收|eps|earnings|profit|revenue|guidance/.test(s))return'earnings';
+  if(/比特幣|加密|bitcoin|crypto|btc|eth/.test(s))return'crypto';
+  if(/中國|貿易|關稅|china|trade|tariff/.test(s))return'trade';
+  if(/石油|原油|能源|oil|energy|crude|wti|opec/.test(s))return'energy';
+  if(/gdp|失業|就業|衰退|recession|unemployment/.test(s))return'macro';
   return'market';
 }
 const TL={fed:'FED/政策',earnings:'財報',market:'市場',energy:'能源',crypto:'加密貨幣',trade:'貿易',macro:'總經'};
 function tl(k){return TL[k]||'市場';}
+
 function sent(t){
   const s=t.toLowerCase();
-  if(/surges?|jumps?|rallies?|gains?|beats?|record|high|rises?|climbs?|soars?|bullish/.test(s))return'up';
-  if(/falls?|drops?|slumps?|declines?|miss|weak|crash|bearish|cuts?|warns?|fears?|tumbles?/.test(s))return'dn';
+  if(/上漲|大漲|飆漲|創高|超越|優於|surges?|jumps?|rallies?|gains?|beats?|record|rises?|climbs?|soars?|bullish/.test(s))return'up';
+  if(/下跌|大跌|崩跌|低於|衰退|falls?|drops?|slumps?|declines?|miss|weak|crash|bearish|cuts?|warns?|fears?/.test(s))return'dn';
   return'neu';
 }
+
 function ago(pub){
-  try{const d=Math.floor((new Date()-new Date(pub))/60000);
-    if(d<60)return d+'分鐘前';if(d<1440)return Math.floor(d/60)+'小時前';return Math.floor(d/1440)+'天前';}
-  catch{return '';}
+  try{
+    const d=Math.floor((new Date()-new Date(pub))/60000);
+    if(d<60)return d+'分鐘前';
+    if(d<1440)return Math.floor(d/60)+'小時前';
+    return Math.floor(d/1440)+'天前';
+  }catch{return '';}
+}
+
+// 用 <a> 標籤做連結，target="_blank" 最可靠
+function newsLink(url, cls, inner) {
+  const safe = url ? url.replace(/"/g, '&quot;') : '#';
+  return `<a href="${safe}" target="_blank" rel="noopener noreferrer" class="${cls}" style="text-decoration:none;color:inherit;display:block">${inner}</a>`;
 }
 
 async function fetchNews(query){
@@ -215,27 +233,24 @@ async function fetchNews(query){
   area.innerHTML=`<div class="loading"><div class="spinner"></div><div class="ltext">載入「${query||'財經頭條'}」新聞…</div></div>`;
   document.getElementById('cnt').textContent='';
 
-  const q = query || 'stock market economy finance Wall Street';
+  const q = query || '美股 經濟 財經';
 
   try {
-    // 呼叫自己的 Vercel Edge Function，沒有 CORS 問題
-    const res = await fetch(`/api/news?q=${encodeURIComponent(q)}`, {signal: AbortSignal.timeout(10000)});
+    const res = await fetch(`/api/news?q=${encodeURIComponent(q)}`, {signal:AbortSignal.timeout(12000)});
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    if(!data.ok) throw new Error(data.error||'Unknown error');
+    if(!data.ok) throw new Error(data.error||'API 錯誤');
+    if(!data.items.length) throw new Error('沒有找到新聞');
 
-    const articles = data.items;
-    if(!articles.length) throw new Error('No articles');
-
-    render(articles);
-    renderSide(articles.slice(0,6));
-    document.getElementById('cnt').textContent = articles.length + ' 則';
+    render(data.items);
+    renderSide(data.items.slice(0,6));
+    document.getElementById('cnt').textContent = data.items.length + ' 則';
     document.getElementById('footer').textContent =
       '資料來源：Google News · 更新：' + new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
   } catch(e) {
     area.innerHTML=`<div class="err-box">
       <div class="err-title">⚠ 無法載入新聞</div>
-      <div class="err-msg">錯誤：${e.message}<br>請稍後再試，或嘗試其他關鍵字。</div>
+      <div class="err-msg">錯誤：${e.message}</div>
       <button class="retry" onclick="fetchNews('${query}')">重新嘗試</button>
     </div>`;
   }
@@ -243,43 +258,55 @@ async function fetchNews(query){
 
 function render(arts){
   const [h,...rest]=arts;
-  const stack=rest.slice(0,3),grid=rest.slice(3,9),list=rest.slice(9);
-  const tk=getTagKey,s=sent;
+  const stack=rest.slice(0,3), grid=rest.slice(3,9), list=rest.slice(9);
+
   document.getElementById('news-area').innerHTML=`
     <div class="hero-grid">
-      <div class="hero-main" onclick="open('${h.link}','_blank')">
-        <div class="ntag ${tk(h.title)}">${tl(tk(h.title))}</div>
-        <h2><span class="dot ${s(h.title)}"></span>${h.title}</h2>
+      ${newsLink(h.link, '', `<div class="hero-main">
+        <div class="ntag ${getTagKey(h.title)}">${tl(getTagKey(h.title))}</div>
+        <h2><span class="dot ${sent(h.title)}"></span>${h.title}</h2>
         <div class="hero-excerpt">點擊閱讀完整報導 → ${h.source}</div>
         <div class="meta">${h.source} · ${ago(h.pubDate)}</div>
-      </div>
+      </div>`)}
       <div class="hero-stack">
-        ${stack.map(a=>`<div class="mini" onclick="open('${a.link}','_blank')">
-          <div><div class="ntag ${tk(a.title)}" style="margin-bottom:4px">${tl(tk(a.title))}</div>
-          <h3><span class="dot ${s(a.title)}"></span>${a.title}</h3></div>
+        ${stack.map(a=>newsLink(a.link, '', `<div class="mini">
+          <div>
+            <div class="ntag ${getTagKey(a.title)}" style="margin-bottom:4px">${tl(getTagKey(a.title))}</div>
+            <h3><span class="dot ${sent(a.title)}"></span>${a.title}</h3>
+          </div>
           <div class="meta">${a.source} · ${ago(a.pubDate)}</div>
-        </div>`).join('')}
+        </div>`)).join('')}
       </div>
     </div>
-    ${grid.length?`<div class="card-row">${grid.map(a=>`<div class="card" onclick="open('${a.link}','_blank')">
-      <div class="ntag ${tk(a.title)}" style="margin-bottom:6px">${tl(tk(a.title))}</div>
-      <h4><span class="dot ${s(a.title)}"></span>${a.title}</h4>
-      <div class="meta">${a.source} · ${ago(a.pubDate)}</div>
-    </div>`).join('')}</div>`:''}
-    ${list.length?`<div class="list-wrap">${list.map(a=>`<div class="list-row" onclick="open('${a.link}','_blank')">
-      <div><div class="ntag ${tk(a.title)}" style="margin-bottom:3px">${tl(tk(a.title))}</div>
-      <div class="list-title"><span class="dot ${s(a.title)}"></span>${a.title}</div></div>
-      <div style="text-align:right;min-width:72px"><div class="list-src">${a.source}</div><div class="list-src">${ago(a.pubDate)}</div></div>
-    </div>`).join('')}</div>`:''}
+    ${grid.length ? `<div class="card-row">
+      ${grid.map(a=>newsLink(a.link, '', `<div class="card">
+        <div class="ntag ${getTagKey(a.title)}" style="margin-bottom:6px">${tl(getTagKey(a.title))}</div>
+        <h4><span class="dot ${sent(a.title)}"></span>${a.title}</h4>
+        <div class="meta">${a.source} · ${ago(a.pubDate)}</div>
+      </div>`)).join('')}
+    </div>` : ''}
+    ${list.length ? `<div class="list-wrap">
+      ${list.map(a=>newsLink(a.link, '', `<div class="list-row">
+        <div>
+          <div class="ntag ${getTagKey(a.title)}" style="margin-bottom:3px">${tl(getTagKey(a.title))}</div>
+          <div class="list-title"><span class="dot ${sent(a.title)}"></span>${a.title}</div>
+        </div>
+        <div style="text-align:right;min-width:72px">
+          <div class="list-src">${a.source}</div>
+          <div class="list-src">${ago(a.pubDate)}</div>
+        </div>
+      </div>`)).join('')}
+    </div>` : ''}
   `;
 }
 
 function renderSide(arts){
-  document.getElementById('side-news').innerHTML=arts.map(a=>`
-    <div class="sni" onclick="open('${a.link}','_blank')">
+  document.getElementById('side-news').innerHTML = arts.map(a=>
+    newsLink(a.link, 'sni', `
       <div class="snt"><span class="dot ${sent(a.title)}"></span>${a.title}</div>
       <div class="snm">${a.source} · ${ago(a.pubDate)}</div>
-    </div>`).join('');
+    `)
+  ).join('');
 }
 
 function setQ(q){ currentQ=q; document.getElementById('feed-label').textContent=q+' 新聞'; document.getElementById('q').value=q; fetchNews(q); }
