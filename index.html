@@ -32,8 +32,10 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:
 .sb:hover{opacity:.85}
 .wl-label{font-family:var(--body);font-size:13px;color:var(--ink3);white-space:nowrap;font-weight:500}
 .tags{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.tag-btn{padding:5px 13px;border:1.5px solid var(--paper3);border-radius:20px;font-family:var(--body);font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:var(--ink2);transition:all .15s}
+.tag-btn{padding:5px 13px;border:1.5px solid var(--paper3);border-radius:20px;font-family:var(--body);font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:var(--ink2);transition:all .15s;display:inline-flex;align-items:center;gap:5px}
 .tag-btn:hover{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.tag-btn:hover .rm-x{opacity:1}
+.rm-x{opacity:0;font-size:14px;line-height:1;margin-left:2px;transition:opacity .15s}
 .add-btn{padding:5px 10px;border:1.5px dashed var(--ink3);border-radius:20px;font-family:var(--body);font-size:13px;cursor:pointer;color:var(--ink3);background:transparent}
 .add-btn:hover{border-color:var(--accent);color:var(--accent)}
 .layout{display:grid;grid-template-columns:1fr 290px;max-width:1200px;margin:0 auto}
@@ -182,9 +184,18 @@ let currentQ = '';
 
 function saveWL(){ localStorage.setItem('mp_wl', JSON.stringify(watchlist)); }
 
+function removeWL(s, e){
+  e.stopPropagation();
+  watchlist = watchlist.filter(w=>w!==s);
+  saveWL(); renderWL();
+  if(currentQ===s) clearQ();
+}
+
 function renderWL(){
   document.getElementById('wl-tags').innerHTML =
-    watchlist.map(s=>`<button class="tag-btn" onclick="setQ('${s}')">${s}</button>`).join('') +
+    watchlist.map(s=>`<button class="tag-btn" onclick="setQ('${s}')">
+      ${s}<span class="rm-x" onclick="removeWL('${s}',event)" title="移除">×</span>
+    </button>`).join('') +
     `<button class="tag-btn" style="opacity:.55" onclick="clearQ()">全部</button>`;
   document.getElementById('prices').innerHTML = watchlist.map(s=>{
     const r=MOCK[s]||{p:(100+Math.random()*300),c:((Math.random()*6)-3)};
