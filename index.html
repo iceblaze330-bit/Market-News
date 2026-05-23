@@ -4,112 +4,115 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MarketPulse — 美股財經新聞</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Source+Serif+4:wght@300;400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600;700;900&family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --ink:#0a0a0a;--ink2:#3a3532;--ink3:#7a746e;--paper:#f8f4ef;
+  --ink:#0a0a0a;--ink2:#2a2826;--ink3:#6a6460;--paper:#f8f4ef;
   --paper2:#f0ebe3;--paper3:#e8e0d4;--accent:#c8390a;--accent2:#1a4a7a;
   --gold:#b8860b;--green:#1a6b3a;
-  --serif:'Playfair Display',Georgia,serif;
-  --body:'Source Serif 4',Georgia,serif;--mono:'JetBrains Mono',monospace;
+  --serif:'Noto Serif TC',Georgia,serif;
+  --body:'Noto Sans TC',sans-serif;
+  --mono:'JetBrains Mono',monospace;
 }
-body{background:var(--paper);color:var(--ink);font-family:var(--body);min-height:100vh}
-.masthead{background:var(--ink);color:var(--paper);padding:12px 28px;display:flex;align-items:center;justify-content:space-between;border-bottom:3px solid var(--accent)}
-.logo{font-family:var(--serif);font-size:30px;font-weight:900;letter-spacing:-1px;color:#fff}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;min-height:100vh}
+.masthead{background:var(--ink);color:var(--paper);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:4px solid var(--accent)}
+.logo{font-family:var(--serif);font-size:34px;font-weight:900;letter-spacing:-1px;color:#fff}
 .logo span{color:var(--accent)}
-.edition{font-family:var(--mono);font-size:11px;color:#999;letter-spacing:1px;margin-left:14px}
-.ticker{display:flex;gap:20px;font-family:var(--mono);font-size:12px}
-.tick{display:flex;flex-direction:column;align-items:flex-end}
-.tick-sym{color:#aaa;font-size:10px;letter-spacing:1px}
-.tick-val{color:#fff;font-weight:600}
+.edition{font-family:var(--mono);font-size:12px;color:#aaa;letter-spacing:1px;margin-left:16px}
+.ticker{display:flex;gap:24px;font-family:var(--mono);font-size:13px}
+.tick{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
+.tick-sym{color:#aaa;font-size:11px;letter-spacing:1px}
+.tick-val{color:#fff;font-weight:600;font-size:14px}
 .up{color:#4caf50}.dn{color:#ef5350}
-.subbar{background:var(--paper2);border-bottom:1px solid var(--paper3);padding:10px 28px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.si{padding:7px 12px;border:1.5px solid var(--paper3);border-radius:4px;font-family:var(--body);font-size:14px;background:#fff;color:var(--ink);outline:none;width:250px}
+.subbar{background:var(--paper2);border-bottom:1px solid var(--paper3);padding:12px 32px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.si{padding:9px 14px;border:1.5px solid var(--paper3);border-radius:4px;font-family:var(--body);font-size:15px;background:#fff;color:var(--ink);outline:none;width:280px}
 .si:focus{border-color:var(--accent2)}
-.sb{padding:7px 16px;background:var(--accent2);color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer}
+.sb{padding:9px 18px;background:var(--accent2);color:#fff;border:none;border-radius:4px;font-size:15px;font-family:var(--body);cursor:pointer;font-weight:500}
 .sb:hover{opacity:.85}
-.wl-label{font-family:var(--mono);font-size:10px;color:var(--ink3);letter-spacing:1px;white-space:nowrap}
-.tags{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-.tag-btn{padding:4px 10px;border:1px solid var(--paper3);border-radius:20px;font-family:var(--mono);font-size:11px;cursor:pointer;background:#fff;color:var(--ink2);transition:all .15s}
+.wl-label{font-family:var(--body);font-size:13px;color:var(--ink3);white-space:nowrap;font-weight:500}
+.tags{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tag-btn{padding:5px 13px;border:1.5px solid var(--paper3);border-radius:20px;font-family:var(--body);font-size:13px;font-weight:500;cursor:pointer;background:#fff;color:var(--ink2);transition:all .15s}
 .tag-btn:hover{background:var(--accent2);color:#fff;border-color:var(--accent2)}
-.add-btn{padding:4px 8px;border:1px dashed var(--ink3);border-radius:20px;font-family:var(--mono);font-size:11px;cursor:pointer;color:var(--ink3);background:transparent}
+.add-btn{padding:5px 10px;border:1.5px dashed var(--ink3);border-radius:20px;font-family:var(--body);font-size:13px;cursor:pointer;color:var(--ink3);background:transparent}
 .add-btn:hover{border-color:var(--accent);color:var(--accent)}
-.layout{display:grid;grid-template-columns:1fr 265px;max-width:1140px;margin:0 auto}
-.main-col{border-right:1px solid var(--paper3);padding:28px}
-.side-col{padding:22px 18px}
-.sec-head{display:flex;align-items:center;gap:10px;margin-bottom:22px;padding-bottom:10px;border-bottom:2px solid var(--ink)}
-.sec-title{font-family:var(--serif);font-size:12px;font-weight:700;letter-spacing:3px;text-transform:uppercase}
+.layout{display:grid;grid-template-columns:1fr 290px;max-width:1200px;margin:0 auto}
+.main-col{border-right:1px solid var(--paper3);padding:32px}
+.side-col{padding:24px 20px}
+.sec-head{display:flex;align-items:center;gap:12px;margin-bottom:24px;padding-bottom:12px;border-bottom:2.5px solid var(--ink)}
+.sec-title{font-family:var(--serif);font-size:14px;font-weight:700;letter-spacing:3px;text-transform:uppercase}
 .sec-line{flex:1;height:1px;background:var(--paper3)}
-.live{font-family:var(--mono);font-size:9px;background:var(--accent);color:#fff;padding:2px 7px;border-radius:10px;letter-spacing:1px;animation:pb 2s ease-in-out infinite}
+.live{font-family:var(--mono);font-size:10px;background:var(--accent);color:#fff;padding:3px 8px;border-radius:10px;letter-spacing:1px;animation:pb 2s ease-in-out infinite}
 @keyframes pb{0%,100%{opacity:1}50%{opacity:.55}}
-.cnt{font-family:var(--mono);font-size:10px;color:var(--ink3)}
-.ntag{font-family:var(--mono);font-size:9px;letter-spacing:2px;font-weight:600;margin-bottom:7px;text-transform:uppercase}
+.cnt{font-family:var(--mono);font-size:11px;color:var(--ink3)}
+/* 分類標籤 */
+.ntag{font-family:var(--body);font-size:11px;letter-spacing:1.5px;font-weight:700;margin-bottom:8px;text-transform:uppercase}
 .ntag.fed{color:var(--accent)}.ntag.earnings{color:var(--green)}.ntag.market{color:var(--accent2)}
 .ntag.energy{color:var(--gold)}.ntag.crypto{color:#7b5ea7}.ntag.trade{color:#5a7a3a}.ntag.macro{color:#8a4a2a}
-.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:1px}
+/* 情緒點 */
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:2px;flex-shrink:0}
 .dot.up{background:var(--green)}.dot.dn{background:#c8390a}.dot.neu{background:var(--gold)}
-.meta{font-family:var(--mono);font-size:10px;color:var(--ink3)}
+.meta{font-family:var(--body);font-size:12px;color:var(--ink3);margin-top:6px}
+/* Hero */
 .hero-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:1px;background:var(--paper3);margin-bottom:1px}
-.hero-main{background:var(--paper);padding:22px 26px 22px 0;cursor:pointer;transition:background .15s}
+.hero-main{background:var(--paper);padding:24px 28px 24px 0;cursor:pointer;transition:background .15s}
 .hero-main:hover{background:var(--paper2)}
-.hero-main h2{font-family:var(--serif);font-size:23px;font-weight:900;line-height:1.28;color:var(--ink);margin-bottom:10px}
-.hero-excerpt{font-size:13px;color:var(--ink3);line-height:1.7;margin-bottom:12px}
+.hero-main h2{font-family:var(--serif);font-size:26px;font-weight:900;line-height:1.3;color:var(--ink);margin-bottom:12px}
+.hero-excerpt{font-size:15px;color:var(--ink3);line-height:1.7;margin-bottom:12px}
 .hero-stack{display:flex;flex-direction:column;gap:1px}
-.mini{background:var(--paper);padding:14px 16px;cursor:pointer;transition:background .15s;border-left:3px solid transparent;flex:1;display:flex;flex-direction:column;justify-content:space-between}
+.mini{background:var(--paper);padding:16px 18px;cursor:pointer;transition:background .15s;border-left:3px solid transparent;flex:1;display:flex;flex-direction:column;justify-content:space-between}
 .mini:hover{background:var(--paper2);border-left-color:var(--accent2)}
-.mini h3{font-family:var(--serif);font-size:13px;font-weight:700;line-height:1.35;margin-bottom:5px}
+.mini h3{font-family:var(--serif);font-size:16px;font-weight:700;line-height:1.4;margin-bottom:6px;color:var(--ink)}
+/* 卡片列 */
 .card-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--paper3);margin-top:1px}
-.card{background:var(--paper);padding:16px;cursor:pointer;transition:background .15s}
+.card{background:var(--paper);padding:18px;cursor:pointer;transition:background .15s}
 .card:hover{background:var(--paper2)}
-.card h4{font-family:var(--serif);font-size:13px;font-weight:700;line-height:1.35;margin-bottom:6px}
+.card h4{font-family:var(--serif);font-size:15px;font-weight:700;line-height:1.4;margin-bottom:8px;color:var(--ink)}
+/* 列表 */
 .list-wrap{margin-top:1px}
-.list-row{background:var(--paper);border-bottom:1px solid var(--paper2);padding:11px 15px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;transition:background .15s}
+.list-row{background:var(--paper);border-bottom:1px solid var(--paper2);padding:14px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;transition:background .15s}
 .list-row:hover{background:var(--paper2)}
-.list-title{font-family:var(--serif);font-size:13px;line-height:1.35}
-.list-src{font-family:var(--mono);font-size:10px;color:var(--ink3);white-space:nowrap;margin-top:3px}
+.list-title{font-family:var(--serif);font-size:15px;font-weight:600;line-height:1.4;color:var(--ink)}
+.list-src{font-family:var(--body);font-size:12px;color:var(--ink3);white-space:nowrap;margin-top:4px}
+/* loading/error */
 .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:16px}
-.spinner{width:28px;height:28px;border:2px solid var(--paper3);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+.spinner{width:32px;height:32px;border:3px solid var(--paper3);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.ltext{font-family:var(--mono);font-size:12px;color:var(--ink3)}
-.err-box{padding:20px;background:#fff8f6;border-left:4px solid var(--accent);border-radius:4px;margin:8px 0}
-.err-title{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:600;margin-bottom:6px}
-.err-msg{font-size:13px;color:var(--ink2);line-height:1.6}
-.retry{margin-top:10px;padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:4px;cursor:pointer;font-family:var(--mono);font-size:11px}
-.sw{margin-bottom:28px}
-.sw-title{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--ink3);font-weight:600;padding-bottom:8px;border-bottom:1px solid var(--paper3);margin-bottom:12px}
-.wi{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--paper2);cursor:pointer}
+.ltext{font-family:var(--body);font-size:15px;color:var(--ink3)}
+.err-box{padding:24px;background:#fff8f6;border-left:4px solid var(--accent);border-radius:4px;margin:8px 0}
+.err-title{font-family:var(--body);font-size:14px;color:var(--accent);font-weight:700;margin-bottom:8px}
+.err-msg{font-size:14px;color:var(--ink2);line-height:1.7}
+.retry{margin-top:12px;padding:8px 18px;background:var(--accent);color:#fff;border:none;border-radius:4px;cursor:pointer;font-family:var(--body);font-size:14px;font-weight:500}
+/* 側欄 */
+.sw{margin-bottom:32px}
+.sw-title{font-family:var(--body);font-size:11px;letter-spacing:2px;color:var(--ink3);font-weight:700;padding-bottom:10px;border-bottom:1px solid var(--paper3);margin-bottom:14px;text-transform:uppercase}
+.wi{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--paper2);cursor:pointer}
 .wi:hover{background:var(--paper2)}
-.wsym{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--accent2)}
-.wname{font-size:10px;color:var(--ink3)}
-.wprice{font-family:var(--mono);font-size:13px;font-weight:600}
-.wchg{font-family:var(--mono);font-size:11px}
-.sni{padding:9px 0;border-bottom:1px solid var(--paper2);cursor:pointer}
-.snt{font-family:var(--serif);font-size:12px;line-height:1.4;margin-bottom:3px;transition:color .15s}
+.wsym{font-family:var(--mono);font-size:15px;font-weight:700;color:var(--accent2)}
+.wname{font-size:12px;color:var(--ink3);margin-top:2px}
+.wprice{font-family:var(--mono);font-size:15px;font-weight:600}
+.wchg{font-family:var(--mono);font-size:12px;margin-top:2px}
+.sni{padding:12px 0;border-bottom:1px solid var(--paper2);cursor:pointer;display:block;text-decoration:none;color:inherit}
+.snt{font-family:var(--serif);font-size:14px;font-weight:600;line-height:1.45;margin-bottom:4px;transition:color .15s;color:var(--ink)}
 .sni:hover .snt{color:var(--accent2)}
-.snm{font-family:var(--mono);font-size:10px;color:var(--ink3)}
-.footer{font-family:var(--mono);font-size:10px;color:var(--ink3);text-align:center;padding:14px;border-top:1px solid var(--paper3);margin-top:4px}
+.snm{font-family:var(--body);font-size:12px;color:var(--ink3)}
+.footer{font-family:var(--body);font-size:12px;color:var(--ink3);text-align:center;padding:16px;border-top:1px solid var(--paper3);margin-top:4px}
+/* Modal */
 .mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;align-items:center;justify-content:center}
 .mo.open{display:flex}
-.mb{background:#fff;padding:26px;border-radius:4px;width:320px;border-top:4px solid var(--accent)}
-.mt{font-family:var(--serif);font-size:18px;font-weight:700;margin-bottom:16px}
-.mi{width:100%;padding:9px 12px;border:1.5px solid var(--paper3);border-radius:4px;font-family:var(--mono);font-size:15px;text-transform:uppercase;outline:none;margin-bottom:12px}
+.mb{background:#fff;padding:28px;border-radius:6px;width:340px;border-top:4px solid var(--accent)}
+.mt{font-family:var(--serif);font-size:20px;font-weight:700;margin-bottom:18px}
+.mi{width:100%;padding:10px 14px;border:1.5px solid var(--paper3);border-radius:4px;font-family:var(--mono);font-size:16px;text-transform:uppercase;outline:none;margin-bottom:14px}
 .mi:focus{border-color:var(--accent2)}
-.mbtns{display:flex;gap:8px;justify-content:flex-end}
-.bc{padding:7px 14px;border:1px solid var(--paper3);border-radius:4px;background:#fff;cursor:pointer;font-size:13px}
-.bok{padding:7px 16px;border:none;border-radius:4px;background:var(--accent2);color:#fff;cursor:pointer;font-size:13px}
-/* 新聞卡片 a 標籤樣式 */
-a.news-link{display:block;text-decoration:none;color:inherit}
-a.news-link:hover .hero-main{background:var(--paper2)}
-a.news-link:hover .mini{background:var(--paper2);border-left-color:var(--accent2)}
-a.news-link:hover .card{background:var(--paper2)}
-a.news-link:hover .list-row{background:var(--paper2)}
-@media(max-width:768px){
+.mbtns{display:flex;gap:10px;justify-content:flex-end}
+.bc{padding:8px 16px;border:1.5px solid var(--paper3);border-radius:4px;background:#fff;cursor:pointer;font-size:14px;font-family:var(--body)}
+.bok{padding:8px 18px;border:none;border-radius:4px;background:var(--accent2);color:#fff;cursor:pointer;font-size:14px;font-family:var(--body);font-weight:500}
+@media(max-width:900px){
   .layout{grid-template-columns:1fr}.side-col{display:none}
   .hero-grid{grid-template-columns:1fr}.hero-stack{display:none}
   .card-row{grid-template-columns:1fr 1fr}
   .ticker{display:none}.edition{display:none}
-  .main-col{padding:16px}
+  .main-col{padding:20px}
 }
 </style>
 </head>
@@ -188,8 +191,10 @@ function renderWL(){
     const u=r.c>=0;
     return`<div class="wi" onclick="setQ('${s}')">
       <div><div class="wsym">${s}</div><div class="wname">點擊篩選新聞</div></div>
-      <div style="text-align:right"><div class="wprice">$${r.p.toFixed(2)}</div>
-      <div class="wchg ${u?'up':'dn'}">${u?'▲':'▼'}${Math.abs(r.c).toFixed(2)}%</div></div>
+      <div style="text-align:right">
+        <div class="wprice">$${r.p.toFixed(2)}</div>
+        <div class="wchg ${u?'up':'dn'}">${u?'▲':'▼'}${Math.abs(r.c).toFixed(2)}%</div>
+      </div>
     </div>`;}).join('');
 }
 
@@ -222,10 +227,9 @@ function ago(pub){
   }catch{return '';}
 }
 
-// 用 <a> 標籤做連結，target="_blank" 最可靠
-function newsLink(url, cls, inner) {
-  const safe = url ? url.replace(/"/g, '&quot;') : '#';
-  return `<a href="${safe}" target="_blank" rel="noopener noreferrer" class="${cls}" style="text-decoration:none;color:inherit;display:block">${inner}</a>`;
+function card(url, inner){
+  const safe=(url||'#').replace(/"/g,'&quot;');
+  return`<a href="${safe}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit;display:block">${inner}</a>`;
 }
 
 async function fetchNews(query){
@@ -234,99 +238,95 @@ async function fetchNews(query){
   document.getElementById('cnt').textContent='';
 
   const q = query || '美股 經濟 財經';
-
-  try {
-    const res = await fetch(`/api/news?q=${encodeURIComponent(q)}`, {signal:AbortSignal.timeout(12000)});
+  try{
+    const res=await fetch(`/api/news?q=${encodeURIComponent(q)}`,{signal:AbortSignal.timeout(12000)});
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
+    const data=await res.json();
     if(!data.ok) throw new Error(data.error||'API 錯誤');
-    if(!data.items.length) throw new Error('沒有找到新聞');
-
+    if(!data.items.length) throw new Error('找不到新聞');
     render(data.items);
     renderSide(data.items.slice(0,6));
-    document.getElementById('cnt').textContent = data.items.length + ' 則';
-    document.getElementById('footer').textContent =
-      '資料來源：Google News · 更新：' + new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
-  } catch(e) {
+    document.getElementById('cnt').textContent=data.items.length+' 則';
+    document.getElementById('footer').textContent='資料來源：Google News · 更新：'+new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){
     area.innerHTML=`<div class="err-box">
       <div class="err-title">⚠ 無法載入新聞</div>
       <div class="err-msg">錯誤：${e.message}</div>
-      <button class="retry" onclick="fetchNews('${query}')">重新嘗試</button>
+      <button class="retry" onclick="fetchNews('${query||''}')">重新嘗試</button>
     </div>`;
   }
 }
 
 function render(arts){
   const [h,...rest]=arts;
-  const stack=rest.slice(0,3), grid=rest.slice(3,9), list=rest.slice(9);
-
+  const stack=rest.slice(0,3),grid=rest.slice(3,9),list=rest.slice(9);
   document.getElementById('news-area').innerHTML=`
     <div class="hero-grid">
-      ${newsLink(h.link, '', `<div class="hero-main">
+      ${card(h.link,`<div class="hero-main">
         <div class="ntag ${getTagKey(h.title)}">${tl(getTagKey(h.title))}</div>
         <h2><span class="dot ${sent(h.title)}"></span>${h.title}</h2>
         <div class="hero-excerpt">點擊閱讀完整報導 → ${h.source}</div>
         <div class="meta">${h.source} · ${ago(h.pubDate)}</div>
       </div>`)}
       <div class="hero-stack">
-        ${stack.map(a=>newsLink(a.link, '', `<div class="mini">
+        ${stack.map(a=>card(a.link,`<div class="mini">
           <div>
-            <div class="ntag ${getTagKey(a.title)}" style="margin-bottom:4px">${tl(getTagKey(a.title))}</div>
+            <div class="ntag ${getTagKey(a.title)}" style="margin-bottom:5px">${tl(getTagKey(a.title))}</div>
             <h3><span class="dot ${sent(a.title)}"></span>${a.title}</h3>
           </div>
           <div class="meta">${a.source} · ${ago(a.pubDate)}</div>
         </div>`)).join('')}
       </div>
     </div>
-    ${grid.length ? `<div class="card-row">
-      ${grid.map(a=>newsLink(a.link, '', `<div class="card">
-        <div class="ntag ${getTagKey(a.title)}" style="margin-bottom:6px">${tl(getTagKey(a.title))}</div>
+    ${grid.length?`<div class="card-row">
+      ${grid.map(a=>card(a.link,`<div class="card">
+        <div class="ntag ${getTagKey(a.title)}" style="margin-bottom:7px">${tl(getTagKey(a.title))}</div>
         <h4><span class="dot ${sent(a.title)}"></span>${a.title}</h4>
         <div class="meta">${a.source} · ${ago(a.pubDate)}</div>
       </div>`)).join('')}
-    </div>` : ''}
-    ${list.length ? `<div class="list-wrap">
-      ${list.map(a=>newsLink(a.link, '', `<div class="list-row">
+    </div>`:''}
+    ${list.length?`<div class="list-wrap">
+      ${list.map(a=>card(a.link,`<div class="list-row">
         <div>
-          <div class="ntag ${getTagKey(a.title)}" style="margin-bottom:3px">${tl(getTagKey(a.title))}</div>
+          <div class="ntag ${getTagKey(a.title)}" style="margin-bottom:4px">${tl(getTagKey(a.title))}</div>
           <div class="list-title"><span class="dot ${sent(a.title)}"></span>${a.title}</div>
         </div>
-        <div style="text-align:right;min-width:72px">
+        <div style="text-align:right;min-width:80px">
           <div class="list-src">${a.source}</div>
           <div class="list-src">${ago(a.pubDate)}</div>
         </div>
       </div>`)).join('')}
-    </div>` : ''}
+    </div>`:''}
   `;
 }
 
 function renderSide(arts){
-  document.getElementById('side-news').innerHTML = arts.map(a=>
-    newsLink(a.link, 'sni', `
+  document.getElementById('side-news').innerHTML=arts.map(a=>
+    card(a.link,`<div class="sni">
       <div class="snt"><span class="dot ${sent(a.title)}"></span>${a.title}</div>
       <div class="snm">${a.source} · ${ago(a.pubDate)}</div>
-    `)
+    </div>`)
   ).join('');
 }
 
-function setQ(q){ currentQ=q; document.getElementById('feed-label').textContent=q+' 新聞'; document.getElementById('q').value=q; fetchNews(q); }
-function clearQ(){ currentQ=''; document.getElementById('feed-label').textContent='今日財經頭條'; document.getElementById('q').value=''; fetchNews(''); }
-function doSearch(){ const v=document.getElementById('q').value.trim(); if(v)setQ(v); else clearQ(); }
+function setQ(q){currentQ=q;document.getElementById('feed-label').textContent=q+' 新聞';document.getElementById('q').value=q;fetchNews(q);}
+function clearQ(){currentQ='';document.getElementById('feed-label').textContent='今日財經頭條';document.getElementById('q').value='';fetchNews('');}
+function doSearch(){const v=document.getElementById('q').value.trim();if(v)setQ(v);else clearQ();}
 document.getElementById('q').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
 
-function openM(){ document.getElementById('modal').classList.add('open'); document.getElementById('mi').focus(); }
-function closeM(){ document.getElementById('modal').classList.remove('open'); document.getElementById('mi').value=''; }
+function openM(){document.getElementById('modal').classList.add('open');document.getElementById('mi').focus();}
+function closeM(){document.getElementById('modal').classList.remove('open');document.getElementById('mi').value='';}
 function confirmAdd(){
   const v=document.getElementById('mi').value.trim().toUpperCase();
   if(v&&!watchlist.includes(v)){watchlist.push(v);saveWL();renderWL();}
-  closeM(); if(v)setQ(v);
+  closeM();if(v)setQ(v);
 }
 document.getElementById('mi').addEventListener('keydown',e=>{if(e.key==='Enter')confirmAdd();if(e.key==='Escape')closeM();});
 document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeM();});
 
 renderWL();
 fetchNews('');
-setInterval(()=>fetchNews(currentQ), 10*60*1000);
+setInterval(()=>fetchNews(currentQ),10*60*1000);
 </script>
 </body>
 </html>
