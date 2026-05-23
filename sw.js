@@ -10,6 +10,10 @@ self.addEventListener('message', e => {
   if (e.data.type === 'START_WATCH') {
     startWatching(e.data.watchlist);
   }
+  if (e.data.type === 'STOP_WATCH') {
+    if (timer) { clearInterval(timer); timer = null; }
+    watchlist = [];
+  }
   if (e.data.type === 'UPDATE_WATCHLIST') {
     watchlist = e.data.watchlist;
     seenTitles = JSON.parse(self._seenCache || '[]');
