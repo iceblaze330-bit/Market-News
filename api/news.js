@@ -2,7 +2,7 @@ export const config = { runtime: 'edge' };
 
 export default async function handler(req) {
   const { searchParams } = new URL(req.url);
-  const q = searchParams.get('q') || 'stock market economy finance';
+  const q = cleanText(searchParams.get('q') || 'stock market economy finance').slice(0, 120);
 
   // 嘗試中文繁體 + 英文兩個 feed
   const feeds = [
@@ -25,28 +25,30 @@ export default async function handler(req) {
         const block = match[1];
 
         // title
-        let title = (
+        let title = decodeXml(
+          (
           block.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/) ||
           block.match(/<title>([\s\S]*?)<\/title>/)
-        )?.[1]?.trim() || '';
+          )?.[1]?.trim() || ''
+        );
         title = title.replace(/ - [^-]{2,60}$/, '').trim();
 
         // link — Google News puts actual URL after <link>
         let link = '';
         const linkMatch = block.match(/<link\s*\/?>(.*?)<\/link>|<link>(.*?)<\/link>/);
         if (linkMatch) {
-          link = (linkMatch[1] || linkMatch[2] || '').trim();
+          link = cleanUrl(decodeXml((linkMatch[1] || linkMatch[2] || '').trim()));
         }
         // fallback: <guid>
         if (!link) {
-          link = block.match(/<guid[^>]*>(.*?)<\/guid>/)?.[1]?.trim() || '';
+          link = cleanUrl(decodeXml(block.match(/<guid[^>]*>(.*?)<\/guid>/)?.[1]?.trim() || ''));
         }
 
         const pubDate = block.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1]?.trim() || '';
-        const source = (
+        const source = decodeXml((
           block.match(/<source[^>]*>([\s\S]*?)<\/source>/) ||
           block.match(/<source>([\s\S]*?)<\/source>/)
-        )?.[1]?.replace(/<!\[CDATA\[|\]\]>/g, '').trim() || 'Google News';
+        )?.[1]?.replace(/<!\[CDATA\[|\]\]>/g, '').trim() || 'Google News');
 
         if (title && link) items.push({ title, link, pubDate, source });
         if (items.length >= 20) break;
@@ -70,4 +72,26 @@ export default async function handler(req) {
     status: 500,
     headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }
   });
+}
+
+function cleanText(value) {
+  return String(value || '').replace(/[\u0000-\u001F\u007F]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function decodeXml(value) {
+  return cleanText(value)
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'");
+}
+
+function cleanUrl(value) {
+  try {
+    const url = new URL(value);
+    return ['http:', 'https:'].includes(url.protocol) ? url.href : '';
+  } catch {
+    return '';
+  }
 }

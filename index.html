@@ -193,11 +193,44 @@ document.getElementById('ed').textContent =
 
 // ── 資料 ──
 const MOCK={SPY:{p:589.24,c:0.58},NVDA:{p:224.18,c:1.78},AAPL:{p:211.45,c:-0.43},TSLA:{p:178.2,c:-1.15},MSFT:{p:422.8,c:0.68},META:{p:534.6,c:1.23},AMZN:{p:196.35,c:-0.71},GOOGL:{p:178.9,c:0.34},QQQ:{p:488.75,c:1.41}};
-let watchlist = JSON.parse(localStorage.getItem('mp_wl')||'["SPY","NVDA","AAPL","TSLA","MSFT"]');
+let watchlist;
+try{
+  watchlist = JSON.parse(localStorage.getItem('mp_wl')||'["SPY","NVDA","AAPL","TSLA","MSFT"]');
+  if(!Array.isArray(watchlist)) throw new Error('Invalid watchlist');
+}catch{
+  watchlist = ["SPY","NVDA","AAPL","TSLA","MSFT"];
+}
 let currentQ = '';
 let swReg = null;
+let swMessageBound = false;
+const API_BASE = window.MP_API_BASE || '';
+const SYMBOL_RE = /^[A-Z][A-Z0-9.-]{0,9}$/;
 
 function saveWL(){ localStorage.setItem('mp_wl', JSON.stringify(watchlist)); }
+
+function esc(v){
+  return String(v ?? '').replace(/[&<>"']/g, ch => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[ch]));
+}
+
+function safeUrl(url){
+  try{
+    const u = new URL(url || '#', location.href);
+    return ['http:', 'https:', 'mailto:'].includes(u.protocol) ? u.href : '#';
+  }catch{
+    return '#';
+  }
+}
+
+function newsEndpoint(q){
+  const base = API_BASE.replace(/\/$/, '');
+  return `${base}/api/news?q=${encodeURIComponent(q)}`;
+}
+
+function safeSymbol(v){
+  return String(v || '').trim().toUpperCase();
+}
 
 // ── Toast 通知 ──
 function showToast(msg, duration=4000){
@@ -211,13 +244,16 @@ function showToast(msg, duration=4000){
 async function initSW(){
   if(!('serviceWorker' in navigator)) return;
   try{
-    swReg = await navigator.serviceWorker.register('/sw.js');
+    swReg = await navigator.serviceWorker.register('./sw.js');
     console.log('[SW] registered');
 
     // 接收 SW 傳回的開啟網址指令
-    navigator.serviceWorker.addEventListener('message', e=>{
-      if(e.data.type==='OPEN_URL') window.open(e.data.url,'_blank');
-    });
+    if(!swMessageBound){
+      navigator.serviceWorker.addEventListener('message', e=>{
+        if(e.data.type==='OPEN_URL') window.open(safeUrl(e.data.url),'_blank','noopener,noreferrer');
+      });
+      swMessageBound = true;
+    }
 
     updateNotifBtn();
   }catch(e){ console.warn('[SW] register failed:', e); }
@@ -301,16 +337,18 @@ function removeWL(s, e){
 }
 
 function renderWL(){
+  watchlist = watchlist.map(safeSymbol).filter(s=>SYMBOL_RE.test(s));
+  saveWL();
   document.getElementById('wl-tags').innerHTML =
-    watchlist.map(s=>`<button class="tag-btn" onclick="setQ('${s}')">
-      ${s}<span class="rm-x" onclick="removeWL('${s}',event)" title="移除">×</span>
+    watchlist.map(s=>`<button class="tag-btn" onclick="setQ('${esc(s)}')">
+      ${esc(s)}<span class="rm-x" onclick="removeWL('${esc(s)}',event)" title="移除">×</span>
     </button>`).join('') +
     `<button class="tag-btn home-btn" onclick="clearQ()">📰 今日財經頭條</button>`;
   document.getElementById('prices').innerHTML = watchlist.map(s=>{
     const r=MOCK[s]||{p:(100+Math.random()*300),c:((Math.random()*6)-3)};
     const u=r.c>=0;
-    return`<div class="wi" onclick="setQ('${s}')">
-      <div><div class="wsym">${s}</div><div class="wname">點擊篩選新聞</div></div>
+    return`<div class="wi" onclick="setQ('${esc(s)}')">
+      <div><div class="wsym">${esc(s)}</div><div class="wname">點擊篩選新聞</div></div>
       <div style="text-align:right">
         <div class="wprice">$${r.p.toFixed(2)}</div>
         <div class="wchg ${u?'up':'dn'}">${u?'▲':'▼'}${Math.abs(r.c).toFixed(2)}%</div>
@@ -346,18 +384,18 @@ function ago(pub){
   }catch{return '';}
 }
 function card(url,inner){
-  const safe=(url||'#').replace(/"/g,'&quot;');
+  const safe=esc(safeUrl(url));
   return`<a href="${safe}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit;display:block">${inner}</a>`;
 }
 
 // ── 抓新聞 ──
 async function fetchNews(query){
   const area=document.getElementById('news-area');
-  area.innerHTML=`<div class="loading"><div class="spinner"></div><div class="ltext">載入「${query||'財經頭條'}」新聞…</div></div>`;
+  area.innerHTML=`<div class="loading"><div class="spinner"></div><div class="ltext">載入「${esc(query||'財經頭條')}」新聞…</div></div>`;
   document.getElementById('cnt').textContent='';
   const q=query||'美股 經濟 財經';
   try{
-    const res=await fetch(`/api/news?q=${encodeURIComponent(q)}`,{signal:AbortSignal.timeout(12000)});
+    const res=await fetch(newsEndpoint(q),{signal:AbortSignal.timeout(12000)});
     if(!res.ok) throw new Error(`HTTP ${res.status}`);
     const data=await res.json();
     if(!data.ok) throw new Error(data.error||'API 錯誤');
@@ -369,49 +407,60 @@ async function fetchNews(query){
   }catch(e){
     area.innerHTML=`<div class="err-box">
       <div class="err-title">⚠ 無法載入新聞</div>
-      <div class="err-msg">錯誤：${e.message}</div>
-      <button class="retry" onclick="fetchNews('${query||''}')">重新嘗試</button>
+      <div class="err-msg">錯誤：${esc(e.message)}</div>
+      <button class="retry" id="retry-news">重新嘗試</button>
     </div>`;
+    document.getElementById('retry-news').addEventListener('click',()=>fetchNews(query||''));
   }
 }
 
+function normalizeArticle(a){
+  return {
+    title: String(a?.title || '未命名新聞').trim(),
+    link: safeUrl(a?.link),
+    source: String(a?.source || 'Google News').trim(),
+    pubDate: a?.pubDate || ''
+  };
+}
+
 function render(arts){
+  arts = arts.map(normalizeArticle);
   const [h,...rest]=arts;
   const stack=rest.slice(0,3),grid=rest.slice(3,9),list=rest.slice(9);
   document.getElementById('news-area').innerHTML=`
     <div class="hero-grid">
       ${card(h.link,`<div class="hero-main">
         <div class="ntag ${getTagKey(h.title)}">${tl(getTagKey(h.title))}</div>
-        <h2><span class="dot ${sent(h.title)}"></span>${h.title}</h2>
-        <div class="hero-excerpt">點擊閱讀完整報導 → ${h.source}</div>
-        <div class="meta">${h.source} · ${ago(h.pubDate)}</div>
+        <h2><span class="dot ${sent(h.title)}"></span>${esc(h.title)}</h2>
+        <div class="hero-excerpt">點擊閱讀完整報導 → ${esc(h.source)}</div>
+        <div class="meta">${esc(h.source)} · ${esc(ago(h.pubDate))}</div>
       </div>`)}
       <div class="hero-stack">
         ${stack.map(a=>card(a.link,`<div class="mini">
           <div>
             <div class="ntag ${getTagKey(a.title)}" style="margin-bottom:5px">${tl(getTagKey(a.title))}</div>
-            <h3><span class="dot ${sent(a.title)}"></span>${a.title}</h3>
+            <h3><span class="dot ${sent(a.title)}"></span>${esc(a.title)}</h3>
           </div>
-          <div class="meta">${a.source} · ${ago(a.pubDate)}</div>
+          <div class="meta">${esc(a.source)} · ${esc(ago(a.pubDate))}</div>
         </div>`)).join('')}
       </div>
     </div>
     ${grid.length?`<div class="card-row">
       ${grid.map(a=>card(a.link,`<div class="card">
         <div class="ntag ${getTagKey(a.title)}" style="margin-bottom:7px">${tl(getTagKey(a.title))}</div>
-        <h4><span class="dot ${sent(a.title)}"></span>${a.title}</h4>
-        <div class="meta">${a.source} · ${ago(a.pubDate)}</div>
+        <h4><span class="dot ${sent(a.title)}"></span>${esc(a.title)}</h4>
+        <div class="meta">${esc(a.source)} · ${esc(ago(a.pubDate))}</div>
       </div>`)).join('')}
     </div>`:''}
     ${list.length?`<div class="list-wrap">
       ${list.map(a=>card(a.link,`<div class="list-row">
         <div>
           <div class="ntag ${getTagKey(a.title)}" style="margin-bottom:4px">${tl(getTagKey(a.title))}</div>
-          <div class="list-title"><span class="dot ${sent(a.title)}"></span>${a.title}</div>
+          <div class="list-title"><span class="dot ${sent(a.title)}"></span>${esc(a.title)}</div>
         </div>
         <div style="text-align:right;min-width:80px">
-          <div class="list-src">${a.source}</div>
-          <div class="list-src">${ago(a.pubDate)}</div>
+          <div class="list-src">${esc(a.source)}</div>
+          <div class="list-src">${esc(ago(a.pubDate))}</div>
         </div>
       </div>`)).join('')}
     </div>`:''}
@@ -419,10 +468,11 @@ function render(arts){
 }
 
 function renderSide(arts){
+  arts = arts.map(normalizeArticle);
   document.getElementById('side-news').innerHTML=arts.map(a=>
     card(a.link,`<div class="sni">
-      <div class="snt"><span class="dot ${sent(a.title)}"></span>${a.title}</div>
-      <div class="snm">${a.source} · ${ago(a.pubDate)}</div>
+      <div class="snt"><span class="dot ${sent(a.title)}"></span>${esc(a.title)}</div>
+      <div class="snm">${esc(a.source)} · ${esc(ago(a.pubDate))}</div>
     </div>`)
   ).join('');
 }
@@ -437,7 +487,11 @@ document.getElementById('q').addEventListener('keydown',e=>{if(e.key==='Enter')d
 function openM(){document.getElementById('modal').classList.add('open');document.getElementById('mi').focus();}
 function closeM(){document.getElementById('modal').classList.remove('open');document.getElementById('mi').value='';}
 function confirmAdd(){
-  const v=document.getElementById('mi').value.trim().toUpperCase();
+  const v=safeSymbol(document.getElementById('mi').value);
+  if(v && !SYMBOL_RE.test(v)){
+    showToast('請輸入有效的股票代號，例如 NVDA、BRK.B 或 BTC-USD');
+    return;
+  }
   if(v&&!watchlist.includes(v)){
     watchlist.push(v);saveWL();renderWL();
     if(swReg?.active) swReg.active.postMessage({type:'UPDATE_WATCHLIST',watchlist});

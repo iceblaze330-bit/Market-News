@@ -1,5 +1,6 @@
 const CACHE = 'mp-v1';
 const CHECK_INTERVAL = 30 * 60 * 1000; // 30分鐘
+const API_BASE = self.MP_API_BASE || '';
 
 // 安裝 Service Worker
 self.addEventListener('install', e => { self.skipWaiting(); });
@@ -16,7 +17,7 @@ self.addEventListener('message', e => {
   }
   if (e.data.type === 'UPDATE_WATCHLIST') {
     watchlist = e.data.watchlist;
-    seenTitles = JSON.parse(self._seenCache || '[]');
+    try { seenTitles = new Set(JSON.parse(self._seenCache || '[]')); } catch { seenTitles = new Set(); }
   }
 });
 
@@ -39,7 +40,7 @@ async function checkNews() {
 
   for (const sym of watchlist) {
     try {
-      const res = await fetch(`/api/news?q=${encodeURIComponent(sym)}`, { signal: AbortSignal.timeout(10000) });
+      const res = await fetch(newsEndpoint(sym), { signal: AbortSignal.timeout(10000) });
       if (!res.ok) continue;
       const data = await res.json();
       if (!data.ok || !data.items.length) continue;
@@ -58,8 +59,8 @@ async function checkNews() {
         // 推播通知
         await self.registration.showNotification(`📈 ${sym} 最新新聞`, {
           body: latest.title,
-          icon: '/icon.png',
-          badge: '/icon.png',
+          icon: new URL('./icon.png', self.registration.scope).href,
+          badge: new URL('./icon.png', self.registration.scope).href,
           tag: sym, // 同股票的通知會覆蓋，不會洗版
           data: { url: latest.link },
           vibrate: [200, 100, 200],
@@ -69,6 +70,11 @@ async function checkNews() {
       console.warn(`[SW] ${sym} check failed:`, e.message);
     }
   }
+}
+
+function newsEndpoint(q) {
+  const base = API_BASE.replace(/\/$/, '');
+  return `${base}/api/news?q=${encodeURIComponent(q)}`;
 }
 
 // 點擊通知時開啟對應新聞
