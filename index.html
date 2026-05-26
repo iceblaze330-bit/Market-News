@@ -446,7 +446,6 @@ function getTagKey(t){
 }
 const TL={fed:'FED/政策',earnings:'財報',market:'市場',energy:'能源',crypto:'加密貨幣',trade:'貿易',macro:'總經'};
 function tl(k){return TL[k]||'市場';}
-
 function isLikelyEnglish(text){
   const s = String(text || '');
   const latin = (s.match(/[A-Za-z]/g) || []).length;
@@ -460,7 +459,7 @@ function translateUrl(text){
 
 function translateLink(title){
   if(!isLikelyEnglish(title)) return '';
-  return `<a class="tr-link" href="${esc(translateUrl(title))}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">ç¿»è­¯</a>`;
+  return `<a class="tr-link" href="${esc(translateUrl(title))}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">&#32763;&#35695;</a>`;
 }
 function sent(t){
   const s=t.toLowerCase();
