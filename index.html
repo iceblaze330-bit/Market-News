@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
@@ -24,6 +24,11 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:
 .tick{display:flex;flex-direction:column;align-items:flex-end;gap:1px}
 .tick-sym{color:#aaa;font-size:11px;letter-spacing:1px}
 .tick-val{color:#fff;font-weight:600;font-size:14px}
+.tv-tape{background:#fff;border-bottom:1px solid var(--paper3);height:46px;overflow:hidden}
+.tv-market-widget{background:#fff;border:1px solid var(--paper3);border-radius:4px;overflow:hidden;min-height:430px}
+.tv-note{font-size:11px;color:var(--ink3);line-height:1.5;margin-top:8px}
+.tradingview-widget-container{width:100%;height:100%}
+.tradingview-widget-container__widget{width:100%;height:100%}
 .up{color:#4caf50}.dn{color:#ef5350}
 .subbar{background:var(--paper2);border-bottom:1px solid var(--paper3);padding:12px 32px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .si{padding:9px 14px;border:1.5px solid var(--paper3);border-radius:4px;font-family:var(--body);font-size:15px;background:#fff;color:var(--ink);outline:none;width:280px}
@@ -119,7 +124,7 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:
   .layout{grid-template-columns:1fr}.side-col{display:none}
   .hero-grid{grid-template-columns:1fr}.hero-stack{display:none}
   .card-row{grid-template-columns:1fr 1fr}
-  .ticker{display:none}.edition{display:none}
+  .edition{display:none}
   .main-col{padding:20px}
 }
 </style>
@@ -131,12 +136,33 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:
     <div class="logo">Market<span>Pulse</span></div>
     <div class="edition" id="ed"></div>
   </div>
-  <div class="ticker">
-    <div class="tick"><span class="tick-sym">DOW</span><span class="tick-val">50,580</span><span class="up">+0.58%</span></div>
-    <div class="tick"><span class="tick-sym">S&P 500</span><span class="tick-val">7,445</span><span class="up">+0.17%</span></div>
-    <div class="tick"><span class="tick-sym">NASDAQ</span><span class="tick-val">26,293</span><span class="up">+0.09%</span></div>
-    <div class="tick"><span class="tick-sym">WTI</span><span class="tick-val">$96.35</span><span class="dn">-1.98%</span></div>
+</div>
+<div class="tv-tape">
+  <div class="tradingview-widget-container">
+    <div class="tradingview-widget-container__widget"></div>
+    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+    {
+      "symbols": [
+        {"proName":"FOREXCOM:SPXUSD","title":"S&P 500"},
+        {"proName":"NASDAQ:NDX","title":"Nasdaq 100"},
+        {"proName":"DJ:DJI","title":"Dow"},
+        {"proName":"NASDAQ:NVDA","title":"NVDA"},
+        {"proName":"NASDAQ:AAPL","title":"AAPL"},
+        {"proName":"NASDAQ:TSLA","title":"TSLA"},
+        {"proName":"NASDAQ:MSFT","title":"MSFT"},
+        {"proName":"NASDAQ:AMZN","title":"AMZN"},
+        {"proName":"TVC:US10Y","title":"US 10Y"},
+        {"proName":"TVC:VIX","title":"VIX"}
+      ],
+      "showSymbolLogo": true,
+      "isTransparent": true,
+      "displayMode": "adaptive",
+      "colorTheme": "light",
+      "locale": "zh_TW"
+    }
+    </script>
   </div>
+</div>
 </div>
 
 <div class="subbar">
@@ -167,7 +193,57 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:
     <div class="footer" id="footer"></div>
   </div>
   <div class="side-col">
-    <div class="sw"><div class="sw-title">模擬行情</div><div id="prices"></div></div>
+    <div class="sw">
+  <div class="sw-title">Live Market - TradingView</div>
+  <div class="tv-market-widget">
+    <div class="tradingview-widget-container">
+      <div class="tradingview-widget-container__widget"></div>
+      <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+      {
+        "colorTheme": "light",
+        "dateRange": "1D",
+        "showChart": true,
+        "locale": "zh_TW",
+        "width": "100%",
+        "height": "430",
+        "largeChartUrl": "",
+        "isTransparent": true,
+        "showSymbolLogo": true,
+        "showFloatingTooltip": false,
+        "tabs": [
+          {
+            "title": "US Stocks",
+            "symbols": [
+              {"s":"NASDAQ:NVDA","d":"NVIDIA"},
+              {"s":"NASDAQ:AAPL","d":"Apple"},
+              {"s":"NASDAQ:TSLA","d":"Tesla"},
+              {"s":"NASDAQ:MSFT","d":"Microsoft"},
+              {"s":"NASDAQ:AMZN","d":"Amazon"},
+              {"s":"NASDAQ:GOOGL","d":"Alphabet"},
+              {"s":"AMEX:SPY","d":"SPY"},
+              {"s":"NASDAQ:QQQ","d":"QQQ"}
+            ],
+            "originalTitle": "Stocks"
+          },
+          {
+            "title": "Indices",
+            "symbols": [
+              {"s":"FOREXCOM:SPXUSD","d":"S&P 500"},
+              {"s":"NASDAQ:NDX","d":"Nasdaq 100"},
+              {"s":"DJ:DJI","d":"Dow Jones"},
+              {"s":"TVC:VIX","d":"VIX"},
+              {"s":"TVC:DXY","d":"US Dollar Index"},
+              {"s":"TVC:US10Y","d":"US 10Y Yield"}
+            ],
+            "originalTitle": "Indices"
+          }
+        ]
+      }
+      </script>
+    </div>
+  </div>
+  <div class="tv-note">Market data is provided by TradingView widgets. Real-time availability depends on exchange and TradingView data permissions.</div>
+</div>
     <div class="sw"><div class="sw-title">快訊</div><div id="side-news"></div></div>
   </div>
 </div>
@@ -344,7 +420,7 @@ function renderWL(){
       ${esc(s)}<span class="rm-x" onclick="removeWL('${esc(s)}',event)" title="移除">×</span>
     </button>`).join('') +
     `<button class="tag-btn home-btn" onclick="clearQ()">📰 今日財經頭條</button>`;
-  document.getElementById('prices').innerHTML = watchlist.map(s=>{
+  const pricesEl=document.getElementById('prices'); if(pricesEl) pricesEl.innerHTML = watchlist.map(s=>{
     const r=MOCK[s]||{p:(100+Math.random()*300),c:((Math.random()*6)-3)};
     const u=r.c>=0;
     return`<div class="wi" onclick="setQ('${esc(s)}')">
