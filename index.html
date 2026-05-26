@@ -86,7 +86,8 @@ body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:
 .list-row:hover{background:var(--paper2)}
 .list-title{font-family:var(--serif);font-size:15px;font-weight:600;line-height:1.4;color:var(--ink)}
 .list-src{font-family:var(--body);font-size:12px;color:var(--ink3);white-space:nowrap;margin-top:4px}
-.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:16px}
+.tr-link{display:inline-flex;align-items:center;margin-left:8px;padding:1px 6px;border:1px solid var(--paper3);border-radius:4px;font-family:var(--body);font-size:11px;font-weight:500;color:var(--accent2);background:#fff;text-decoration:none;vertical-align:2px}
+.tr-link:hover{border-color:var(--accent2);background:var(--paper2)}.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:16px}
 .spinner{width:32px;height:32px;border:3px solid var(--paper3);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .ltext{font-family:var(--body);font-size:15px;color:var(--ink3)}
@@ -445,6 +446,22 @@ function getTagKey(t){
 }
 const TL={fed:'FED/政策',earnings:'財報',market:'市場',energy:'能源',crypto:'加密貨幣',trade:'貿易',macro:'總經'};
 function tl(k){return TL[k]||'市場';}
+
+function isLikelyEnglish(text){
+  const s = String(text || '');
+  const latin = (s.match(/[A-Za-z]/g) || []).length;
+  const cjk = (s.match(/[\u3400-\u9fff]/g) || []).length;
+  return latin >= 12 && latin > cjk * 2;
+}
+
+function translateUrl(text){
+  return `https://translate.google.com/?sl=auto&tl=zh-TW&text=${encodeURIComponent(text)}&op=translate`;
+}
+
+function translateLink(title){
+  if(!isLikelyEnglish(title)) return '';
+  return `<a class="tr-link" href="${esc(translateUrl(title))}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">ç¿»è­¯</a>`;
+}
 function sent(t){
   const s=t.toLowerCase();
   if(/上漲|大漲|飆漲|創高|超越|優於|surges?|jumps?|rallies?|gains?|beats?|record|rises?|climbs?|soars?|bullish/.test(s))return'up';
@@ -507,7 +524,7 @@ function render(arts){
     <div class="hero-grid">
       ${card(h.link,`<div class="hero-main">
         <div class="ntag ${getTagKey(h.title)}">${tl(getTagKey(h.title))}</div>
-        <h2><span class="dot ${sent(h.title)}"></span>${esc(h.title)}</h2>
+        <h2><span class="dot ${sent(h.title)}"></span>${esc(h.title)}${translateLink(h.title)}</h2>
         <div class="hero-excerpt">點擊閱讀完整報導 → ${esc(h.source)}</div>
         <div class="meta">${esc(h.source)} · ${esc(ago(h.pubDate))}</div>
       </div>`)}
@@ -515,7 +532,7 @@ function render(arts){
         ${stack.map(a=>card(a.link,`<div class="mini">
           <div>
             <div class="ntag ${getTagKey(a.title)}" style="margin-bottom:5px">${tl(getTagKey(a.title))}</div>
-            <h3><span class="dot ${sent(a.title)}"></span>${esc(a.title)}</h3>
+            <h3><span class="dot ${sent(a.title)}"></span>${esc(a.title)}${translateLink(a.title)}</h3>
           </div>
           <div class="meta">${esc(a.source)} · ${esc(ago(a.pubDate))}</div>
         </div>`)).join('')}
@@ -524,7 +541,7 @@ function render(arts){
     ${grid.length?`<div class="card-row">
       ${grid.map(a=>card(a.link,`<div class="card">
         <div class="ntag ${getTagKey(a.title)}" style="margin-bottom:7px">${tl(getTagKey(a.title))}</div>
-        <h4><span class="dot ${sent(a.title)}"></span>${esc(a.title)}</h4>
+        <h4><span class="dot ${sent(a.title)}"></span>${esc(a.title)}${translateLink(a.title)}</h4>
         <div class="meta">${esc(a.source)} · ${esc(ago(a.pubDate))}</div>
       </div>`)).join('')}
     </div>`:''}
@@ -532,7 +549,7 @@ function render(arts){
       ${list.map(a=>card(a.link,`<div class="list-row">
         <div>
           <div class="ntag ${getTagKey(a.title)}" style="margin-bottom:4px">${tl(getTagKey(a.title))}</div>
-          <div class="list-title"><span class="dot ${sent(a.title)}"></span>${esc(a.title)}</div>
+          <div class="list-title"><span class="dot ${sent(a.title)}"></span>${esc(a.title)}${translateLink(a.title)}</div>
         </div>
         <div style="text-align:right;min-width:80px">
           <div class="list-src">${esc(a.source)}</div>
@@ -547,7 +564,7 @@ function renderSide(arts){
   arts = arts.map(normalizeArticle);
   document.getElementById('side-news').innerHTML=arts.map(a=>
     card(a.link,`<div class="sni">
-      <div class="snt"><span class="dot ${sent(a.title)}"></span>${esc(a.title)}</div>
+      <div class="snt"><span class="dot ${sent(a.title)}"></span>${esc(a.title)}${translateLink(a.title)}</div>
       <div class="snm">${esc(a.source)} · ${esc(ago(a.pubDate))}</div>
     </div>`)
   ).join('');
