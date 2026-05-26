@@ -2,56 +2,66 @@ export const config = { runtime: 'edge' };
 
 export default async function handler(req) {
   const { searchParams } = new URL(req.url);
-  const baseQuery = cleanText(searchParams.get('q') || 'stock market economy finance').slice(0, 120);
+  const baseQuery = cleanText(searchParams.get('q') || '美股 經濟 財經').slice(0, 120);
   const hours = clampNumber(searchParams.get('hours'), 24, 1, 168);
   const googleQuery = withFreshness(baseQuery, hours);
 
-  const feeds = [
-    `https://news.google.com/rss/search?q=${encodeURIComponent(googleQuery)}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant`,
-    `https://news.google.com/rss/search?q=${encodeURIComponent(googleQuery)}&hl=en-US&gl=US&ceid=US:en`,
-  ];
+  const zhItems = await fetchFeed(
+    `https://news.google.com/rss/search?q=${encodeURIComponent(googleQuery)}&hl=zh-TW&gl=TW&ceid=TW:zh-Hant`
+  );
+  const enItems = await fetchFeed(
+    `https://news.google.com/rss/search?q=${encodeURIComponent(googleQuery)}&hl=en-US&gl=US&ceid=US:en`
+  );
 
-  const allItems = [];
-  const seen = new Set();
+  const recentZh = recentSorted(zhItems, hours);
+  const recentEn = recentSorted(enItems, hours);
 
-  for (const rssUrl of feeds) {
-    try {
-      const res = await fetch(rssUrl, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; MarketPulse/1.0)' },
-      });
-      if (!res.ok) continue;
-
-      const xml = await res.text();
-      const itemMatches = xml.matchAll(/<item>([\s\S]*?)<\/item>/g);
-
-      for (const match of itemMatches) {
-        const item = parseItem(match[1]);
-        if (!item.title || !item.link) continue;
-
-        const key = `${item.title}|${item.source}`.toLowerCase();
-        if (seen.has(key)) continue;
-
-        seen.add(key);
-        allItems.push(item);
-      }
-    } catch (e) {
-      console.error('Feed error:', e.message);
-    }
-  }
-
-  const maxAgeMs = (hours + 12) * 60 * 60 * 1000;
-  const items = allItems
-    .filter(item => !item.pubDate || Date.now() - toTime(item.pubDate) <= maxAgeMs)
-    .sort((a, b) => toTime(b.pubDate) - toTime(a.pubDate))
-    .slice(0, 20);
+  // 繁中新聞優先；只有中文不足 20 則時才用英文補位。
+  const items = dedupe([...recentZh, ...recentEn]).slice(0, 20);
 
   if (items.length > 0) {
-    return json({ ok: true, items, query: googleQuery, hours }, 200, {
+    return json({ ok: true, items, query: googleQuery, hours, languageMode: 'zh-first' }, 200, {
       'Cache-Control': 's-maxage=120, stale-while-revalidate=60',
     });
   }
 
   return json({ ok: false, error: 'No recent news found' }, 404);
+}
+
+async function fetchFeed(rssUrl) {
+  try {
+    const res = await fetch(rssUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; MarketPulse/1.0)' },
+    });
+    if (!res.ok) return [];
+
+    const xml = await res.text();
+    return Array.from(xml.matchAll(/<item>([\s\S]*?)<\/item>/g))
+      .map(match => parseItem(match[1]))
+      .filter(item => item.title && item.link);
+  } catch (e) {
+    console.error('Feed error:', e.message);
+    return [];
+  }
+}
+
+function recentSorted(items, hours) {
+  const maxAgeMs = (hours + 12) * 60 * 60 * 1000;
+  return items
+    .filter(item => !item.pubDate || Date.now() - toTime(item.pubDate) <= maxAgeMs)
+    .sort((a, b) => toTime(b.pubDate) - toTime(a.pubDate));
+}
+
+function dedupe(items) {
+  const seen = new Set();
+  const out = [];
+  for (const item of items) {
+    const key = `${item.title}|${item.source}`.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(item);
+  }
+  return out;
 }
 
 function parseItem(block) {
